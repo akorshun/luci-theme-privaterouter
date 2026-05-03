@@ -1,0 +1,110 @@
+name: Build packages
+
+on:
+  push:
+    branches: [main, master]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 23.05 — opkg / .ipk
+          - label: 23.05 (ipk)
+            arch: x86_64-23.05.6
+            artifact_ext: ipk
+            release: '23.05'
+          # 24.10 — opkg / .ipk
+          - label: 24.10 (ipk)
+            arch: x86_64-24.10.2
+            artifact_ext: ipk
+            release: '24.10'
+          # SNAPSHOT (25.x+) — apk
+          - label: SNAPSHOT (apk)
+            arch: x86_64
+            artifact_ext: apk
+            release: snapshot
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build packages via OpenWrt SDK
+        uses: openwrt/gh-action-sdk@main
+        env:
+          ARCH: ${{ matrix.arch }}
+          FEEDNAME: privaterouter
+          PACKAGES: luci-theme-oat luci-mod-dashboard luci-mod-simple
+          V: s
+          NO_REFRESH_CHECK: 1
+          NO_SHFMT_CHECK: 1
+          IGNORE_ERRORS: n m
+
+      - name: Collect built packages
+        run: |
+          set -e
+          mkdir -p out
+          # SDK puts everything under bin/. Pick the right extension for the release stream.
+          find bin/ -type f -name "*.${{ matrix.artifact_ext }}" \
+            \( -name 'luci-theme-oat*' \
+               -o -name 'luci-mod-dashboard*' \
+               -o -name 'luci-mod-simple*' \) \
+            -exec cp -v {} out/ \;
+          echo "---- artifacts ----"
+          ls -la out/
+          test -n "$(ls -A out/)" || { echo "::error::No packages produced"; exit 1; }
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: privaterouter-${{ matrix.release }}-${{ matrix.artifact_ext }}
+          path: out/*.${{ matrix.artifact_ext }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ matrix.release }}
+          path: logs/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  release:
+    name: Publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: privaterouter-*
+          merge-multiple: true
+
+      - name: List artifacts
+        run: |
+          ls -la dist/
+          file dist/* || true
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false

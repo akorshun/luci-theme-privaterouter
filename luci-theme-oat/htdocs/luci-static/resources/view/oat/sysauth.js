@@ -67,26 +67,34 @@ return view.extend({
 		var card = document.createElement('div');
 		card.className = 'oat-login-card';
 
-		/* Logo */
+		/* Logo + hostname */
+		var hostname = '';
+		var meta = document.querySelector('meta[name="oat-hostname"]');
+		if (meta) hostname = meta.getAttribute('content') || '';
+		if (!hostname) {
+			var t = document.title || '';
+			hostname = t.split(' - ')[0] || 'Router';
+		}
+
 		var logoWrap = document.createElement('div');
 		logoWrap.className = 'oat-login-logo';
-		var logo = document.createElement('img');
-		logo.src = '/luci-static/oat/privaterouter_logo_' + (isDark ? 'dark' : 'light') + '.png';
-		logo.alt = 'PrivateRouter';
-		logo.onerror = function() {
-			this.style.display = 'none';
-			var fallback = document.createElement('div');
-			fallback.className = 'oat-login-logo-fallback';
-			fallback.innerHTML = '<svg viewBox="0 0 24 24" width="40" height="40"><path fill="currentColor" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 6c1.4 0 2.8 1.1 2.8 2.5V11c.6 0 1.2.6 1.2 1.3v3.5c0 .6-.6 1.2-1.2 1.2H9.2c-.6 0-1.2-.6-1.2-1.3v-3.5c0-.6.6-1.2 1.2-1.2V9.5C9.2 8.1 10.6 7 12 7zm0 1.2c-.8 0-1.5.7-1.5 1.3V11h3V9.5c0-.6-.7-1.3-1.5-1.3z"/></svg>';
-			this.parentNode.appendChild(fallback);
-		};
-		logoWrap.appendChild(logo);
+		logoWrap.innerHTML =
+			'<svg viewBox="0 0 100 100" width="64" height="64" aria-hidden="true">' +
+				'<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="6">' +
+					'<path d="M22 38 a32 32 0 0 1 56 0" opacity="0.35"/>' +
+					'<path d="M30 44 a22 22 0 0 1 40 0" opacity="0.65"/>' +
+					'<path d="M38 50 a12 12 0 0 1 24 0" opacity="1"/>' +
+				'</g>' +
+				'<rect x="28" y="56" width="44" height="34" rx="6" ry="6" fill="currentColor"/>' +
+				'<circle cx="50" cy="70" r="5" fill="var(--oat-bg, #fff)"/>' +
+				'<path d="M47.5 70 h5 l1.5 12 h-8 z" fill="var(--oat-bg, #fff)"/>' +
+			'</svg>';
 		card.appendChild(logoWrap);
 
 		/* Title */
 		var title = document.createElement('h1');
 		title.className = 'oat-login-title';
-		title.textContent = 'Welcome Back';
+		title.textContent = hostname || 'Welcome Back';
 		card.appendChild(title);
 
 		var subtitle = document.createElement('p');

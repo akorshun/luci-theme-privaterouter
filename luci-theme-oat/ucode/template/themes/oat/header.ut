@@ -21,6 +21,7 @@
 <html lang="{{ dispatcher.lang }}" data-darkmode="{{ darkpref }}" data-ui-mode="simple">
 	<head>
 		<meta charset="utf-8">
+		<meta name="oat-hostname" content="{{ striptags(boardinfo.hostname ?? '') }}">
 		<title>{{ striptags(`${boardinfo.hostname ?? '?'}${node ? ` - ${node.title}` : ''}`) }} - LuCI</title>
 		<meta name="viewport" content="initial-scale=1.0">
 		<link rel="stylesheet" href="{{ media }}/inter-fonts.css">
@@ -363,7 +364,19 @@
 				<span aria-label="{{ _('Toggle navigation menu') }}"></span>
 			</div>
 
-			<a class="brand" href="/">{{ striptags(boardinfo.hostname ?? '?') }}</a>
+			<a class="brand" href="/">
+				<svg class="brand-icon" viewBox="0 0 100 100" width="22" height="22" aria-hidden="true">
+					<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="6">
+						<path d="M22 38 a32 32 0 0 1 56 0" opacity="0.35"/>
+						<path d="M30 44 a22 22 0 0 1 40 0" opacity="0.65"/>
+						<path d="M38 50 a12 12 0 0 1 24 0" opacity="1"/>
+					</g>
+					<rect x="28" y="56" width="44" height="34" rx="6" ry="6" fill="currentColor"/>
+					<circle cx="50" cy="70" r="5" fill="var(--card,#fff)"/>
+					<path d="M47.5 70 h5 l1.5 12 h-8 z" fill="var(--card,#fff)"/>
+				</svg>
+				<span class="brand-text">{{ striptags(boardinfo.hostname ?? '?') }}</span>
+			</a>
 
 			<div class="header-controls">
 				<div class="mode-toggle-wrap" id="mode-toggle-wrap" title="{{ _('Toggle Simple / Advanced mode') }}">

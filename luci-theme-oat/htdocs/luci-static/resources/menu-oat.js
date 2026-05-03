@@ -317,8 +317,10 @@ return baseclass.extend({
 	},
 
 	initHeaderLogo: function() {
+		// Default behaviour: show hostname text rendered by the server template.
+		// Set localStorage 'oat-logo-mode' to 'image' to use the PNG brand mark instead.
 		var mode = localStorage.getItem('oat-logo-mode');
-		if (mode === 'hostname') return;
+		if (mode !== 'image') return;
 
 		var brand = document.querySelector('header .brand');
 		if (!brand) return;
@@ -329,7 +331,7 @@ return baseclass.extend({
 		var img = document.createElement('img');
 		img.src = src;
 		img.className = 'brand-logo-img';
-		img.alt = 'PrivateRouter';
+		img.alt = brand.getAttribute('data-hostname') || 'Router';
 		brand.appendChild(img);
 	}
 });

@@ -207,6 +207,55 @@ privaterouter-oat-theme/
 
 ---
 
+## Fork notes
+
+This is a fork of [torguardvpn/luci-theme-privaterouter](https://github.com/torguardvpn/luci-theme-privaterouter) with two main differences:
+
+* **Logo and branding** — the hardcoded "PrivateRouter" wordmark is gone. The header bar now shows a neutral lock-with-Wi-Fi-arcs icon followed by the router's `system.@system[0].hostname` (the same value used by the page `<title>` and exposed via ubus `system board`). The login page shows the icon and the hostname as the heading.
+* **CI builds** — GitHub Actions builds packages for OpenWrt 23.05, 24.10 (`.ipk` for opkg) and SNAPSHOT (`.apk` for the new APK package manager used in 24.10+ snapshots and 25.x stable). See `.github/workflows/build.yml`.
+
+If you want the old PNG brand mark back, set `localStorage.setItem('oat-logo-mode', 'image')` in your browser console. The PNG files (`privaterouter_logo_light.png`, `privaterouter_logo_dark.png`) still ship with the package — only their default usage changed.
+
+### Building via CI
+
+Every push to `main` builds packages for all three OpenWrt streams. Artifacts are attached to the workflow run and named:
+
+* `privaterouter-23.05-ipk` — `.ipk` for OpenWrt 23.05.x (opkg)
+* `privaterouter-24.10-ipk` — `.ipk` for OpenWrt 24.10.x (opkg)
+* `privaterouter-snapshot-apk` — `.apk` for OpenWrt SNAPSHOT / 25.x (apk)
+
+Pushing a tag matching `v*` (e.g. `v1.0.1`) additionally creates a GitHub Release with all six artifacts attached.
+
+The packages are `LUCI_PKGARCH:=all`, so the same `.ipk` / `.apk` works on every architecture (x86_64, aarch64, mips, etc.) — only the package format depends on the OpenWrt release.
+
+### Installing the built packages
+
+On 23.05 / 24.10:
+
+```sh
+opkg install ./luci-theme-oat_*.ipk
+opkg install ./luci-mod-dashboard_*.ipk
+opkg install ./luci-mod-simple_*.ipk
+```
+
+On 25.x / SNAPSHOT (e.g. Rock5T running OpenWrt 25.12):
+
+```sh
+apk add --allow-untrusted ./luci-theme-oat-*.apk
+apk add --allow-untrusted ./luci-mod-dashboard-*.apk
+apk add --allow-untrusted ./luci-mod-simple-*.apk
+```
+
+After installing all three:
+
+```sh
+rm -rf /tmp/luci-*
+/etc/init.d/rpcd restart
+/etc/init.d/uhttpd restart
+```
+
+---
+
 ## Building from Source
 
 To build the `.ipk` packages yourself using the OpenWrt build system:
