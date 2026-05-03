@@ -2,11 +2,10 @@ name: Build packages
 
 on:
   push:
-    branches: [main, master]
     tags:
       - 'v*'
-  pull_request:
-    branches: [main, master]
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -84,7 +83,7 @@ jobs:
   release:
     name: Publish release
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -101,10 +100,11 @@ jobs:
           ls -la dist/
           file dist/* || true
 
-      - name: Create GitHub release
+      - name: Attach files to GitHub release
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*
-          generate_release_notes: true
-          draft: false
-          prerelease: false
+          # tag_name auto-resolves: refs/tags/v* push -> that tag,
+          # release event -> the released tag.
+          generate_release_notes: ${{ github.event_name != 'release' }}
+          fail_on_unmatched_files: true
