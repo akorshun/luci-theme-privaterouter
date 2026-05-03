@@ -4,6 +4,14 @@
 'require rpc';
 'require uci';
 
+
+// Safe string normaliser: UCI list options return arrays, ubus may give
+// numbers/objects/null. Always return a string ('' if missing).
+function asStr(v, fallback) {
+	if (v == null) return fallback || '';
+	if (Array.isArray(v)) v = v.join(' ');
+	return (typeof v === 'string') ? v : String(v);
+}
 var callFileExec = rpc.declare({ object: 'file', method: 'exec', params: ['command', 'params', 'env'] });
 var callUciGet = rpc.declare({ object: 'uci', method: 'get', params: ['config', 'section', 'option'] });
 
@@ -59,7 +67,7 @@ return view.extend({
 				rules.push({
 					sid: s['.name'],
 					name: s.name || '',
-					proto: (s.proto || 'tcp udp').replace(/ /g, '/').toUpperCase().replace(/TCPUDP/,'TCP/UDP'),
+					proto: asStr(s.proto, 'tcp udp').replace(/ /g, '/').toUpperCase().replace(/TCPUDP/,'TCP/UDP'),
 					src: s.src || 'wan',
 					src_dport: s.src_dport || '',
 					dest: s.dest || 'lan',
@@ -79,7 +87,7 @@ return view.extend({
 				rules.push({
 					sid: s['.name'],
 					name: s.name || '',
-					proto: (s.proto || 'tcp udp').replace(/ /g, '/').toUpperCase().replace(/TCPUDP/,'TCP/UDP'),
+					proto: asStr(s.proto, 'tcp udp').replace(/ /g, '/').toUpperCase().replace(/TCPUDP/,'TCP/UDP'),
 					dest_port: s.dest_port || '',
 					enabled: (s.enabled !== '0')
 				});
