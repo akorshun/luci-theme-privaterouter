@@ -619,7 +619,11 @@ return view.extend({
 
 			var val;
 			if (inp.type === 'checkbox') {
-				val = inp.checked ? '0' : '1';
+				if (option === 'disabled') {
+					val = inp.checked ? '0' : '1';
+				} else {
+					val = inp.checked ? '1' : '0';
+				}
 			} else {
 				val = inp.value;
 			}
@@ -644,7 +648,11 @@ return view.extend({
 		return p.then(function() {
 			return uci.save();
 		}).then(function() {
-			return uci.apply();
+			return uci.apply(30);
+		}).catch(function(e) {
+			var msg = (e && (e.message || e.toString())) || '';
+			if (/code\s*5|NOT_FOUND|not found/i.test(msg)) return null;
+			throw e;
 		}).then(function() {
 			if (btn) {
 				btn.textContent = '\u2713 Saved';
