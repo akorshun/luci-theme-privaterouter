@@ -3090,9 +3090,6 @@
 		min-width: 36px;
 		color: var(--md-sys-color-primary, #404040);
 		display: block;
-		/* Inter рендерится с большим спуском базовой линии в боксе line-height,
-		   поэтому смещаем иконку вниз чтобы её центр совпал с x-height текста */
-		transform: translateY(2px);
 	}
 
 	header .brand .brand-text {
