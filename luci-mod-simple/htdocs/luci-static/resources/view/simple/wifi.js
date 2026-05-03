@@ -6,6 +6,7 @@
 
 var callUciGet = rpc.declare({ object: 'uci', method: 'get', params: ['config'], expect: { 'values': {} } });
 
+var callFileExec = rpc.declare({ object: 'file', method: 'exec', params: ['command', 'params'] });
 var SVG = {
 	wifi: '<svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>',
 	eye: '<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>',
@@ -648,11 +649,11 @@ return view.extend({
 		return p.then(function() {
 			return uci.save();
 		}).then(function() {
-			return uci.apply(30);
-		}).catch(function(e) {
-			var msg = (e && (e.message || e.toString())) || '';
-			if (/code\s*5|NOT_FOUND|not found/i.test(msg)) return null;
-			throw e;
+			return uci.apply(0).catch(function(){ return null; });
+		}).then(function() {
+			// uci.apply alone doesn't trigger hostapd reconfigure for
+			// disabled/ssid/key changes. Force 'wifi reload' explicitly.
+			return callFileExec('/sbin/wifi', ['reload']).catch(function(){ return null; });
 		}).then(function() {
 			if (btn) {
 				btn.textContent = '\u2713 Saved';
