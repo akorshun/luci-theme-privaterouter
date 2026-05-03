@@ -34,6 +34,15 @@ var SVG = {
 	edit: '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>'
 };
 
+// Safe MAC normaliser: UCI list options can return arrays; ubus may give
+// numbers/objects/null. Always return an upper-case string ('' for missing).
+function macUp(v) {
+	if (v == null) return '';
+	if (Array.isArray(v)) v = v[0];
+	if (typeof v !== 'string') v = String(v);
+	return v.toUpperCase();
+}
+
 function el(tag, cls, children) {
 	if (arguments.length === 1 && typeof tag === 'string' && tag.charAt(0) === '<') {
 		var w = document.createElement('span'); w.innerHTML = tag; return w.firstChild;
@@ -144,27 +153,27 @@ return view.extend({
 	},
 
 	findStaticLease: function(mac) {
-		mac = (mac || '').toUpperCase();
+		mac = macUp(mac);
 		for (var key in this._staticLeases) {
 			var l = this._staticLeases[key];
-			if ((l.mac || '').toUpperCase() === mac) return l;
+			if (macUp(l.mac) === mac) return l;
 		}
 		return null;
 	},
 
 	isBlocked: function(mac) {
-		return !!this._blockedMACs[(mac || '').toUpperCase()];
+		return !!this._blockedMACs[macUp(mac)];
 	},
 
 	toggleStaticIP: function(mac, ip, hostname, enable) {
 		var self = this;
-		mac = (mac || '').toUpperCase();
+		mac = macUp(mac);
 
 		return uci.load('dhcp').then(function() {
 			var sections = uci.sections('dhcp', 'host');
 			var existing = null;
 			for (var i = 0; i < sections.length; i++) {
-				if ((sections[i].mac || '').toUpperCase() === mac) {
+				if (macUp(sections[i].mac) === mac) {
 					existing = sections[i];
 					break;
 				}
@@ -197,7 +206,7 @@ return view.extend({
 
 	toggleBlock: function(mac, enable) {
 		var self = this;
-		mac = (mac || '').toUpperCase();
+		mac = macUp(mac);
 
 		return uci.load('firewall').then(function() {
 			var sections = uci.sections('firewall', 'rule');
@@ -387,13 +396,13 @@ return view.extend({
 
 		this._staticLeases = {};
 		staticHosts.forEach(function(h) {
-			if (h.mac) self._staticLeases[(h.mac || '').toUpperCase()] = h;
+			if (h.mac) self._staticLeases[macUp(h.mac)] = h;
 		});
 
 		this._blockedMACs = {};
 		fwRules.forEach(function(r) {
 			if (r.name && r.name.indexOf('block_') === 0 && r.target === 'DROP' && r.src_mac) {
-				self._blockedMACs[(r.src_mac || '').toUpperCase()] = true;
+				self._blockedMACs[macUp(r.src_mac)] = true;
 			}
 		});
 
@@ -430,7 +439,7 @@ return view.extend({
 			s1.appendChild(el('div', 'tg-stat-label', 'IPv4 Leases'));
 			stats.appendChild(s1);
 			var uniqueMACs = {};
-			leases.forEach(function(l) { if (l.macaddr) uniqueMACs[l.macaddr.toUpperCase()] = 1; });
+			leases.forEach(function(l) { if (l.macaddr) uniqueMACs[macUp(l.macaddr)] = 1; });
 			var s2 = el('div', 'tg-stat');
 			s2.appendChild(el('div', 'tg-stat-val', '' + Object.keys(uniqueMACs).length));
 			s2.appendChild(el('div', 'tg-stat-label', 'Unique Devices'));
@@ -505,7 +514,7 @@ return view.extend({
 
 		for (var i = 0; i < leases.length; i++) {
 			var lease = leases[i];
-			var mac = (lease.macaddr || '').toUpperCase();
+			var mac = macUp(lease.macaddr);
 			var hostname = lease.hostname || '';
 			if (!hostname && hints[mac]) hostname = hints[mac].name || '';
 			var devInfo = guessDeviceType(hostname, mac);
