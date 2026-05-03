@@ -3085,7 +3085,12 @@
 
 	header .brand .brand-icon {
 		flex: 0 0 auto;
+		width: 36px;
+		height: 36px;
+		min-width: 36px;
 		color: var(--md-sys-color-primary, #404040);
+		display: block;
+		vertical-align: middle;
 	}
 
 	header .brand .brand-text {
@@ -3093,7 +3098,8 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		max-width: calc(var(--sidebar-width) - 50px);
+		max-width: calc(var(--sidebar-width) - 60px);
+		line-height: 1;            /* чтобы иконка и текст центровались по геометрии, не по базовой линии */
 	}
 
 	header .brand .brand-logo-img {

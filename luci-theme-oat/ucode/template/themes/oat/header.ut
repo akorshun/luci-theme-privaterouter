@@ -365,7 +365,7 @@
 			</div>
 
 			<a class="brand" href="/">
-				<svg class="brand-icon" viewBox="0 0 100 100" width="22" height="22" aria-hidden="true">
+				<svg class="brand-icon" viewBox="0 0 100 100" width="36" height="36" aria-hidden="true">
 					<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="6">
 						<path d="M22 38 a32 32 0 0 1 56 0" opacity="0.35"/>
 						<path d="M30 44 a22 22 0 0 1 40 0" opacity="0.65"/>
