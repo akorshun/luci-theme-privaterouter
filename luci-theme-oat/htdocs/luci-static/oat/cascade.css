@@ -3235,7 +3235,15 @@
 	}
 
 	.nav>li>.dropdown-menu {
-		padding-left: 2.5rem;
+		padding-left: 0.75rem;
+	}
+
+	.nav>li>.dropdown-menu>li>a {
+		font-size: 14px;
+		padding-left: 0.5rem;
+		padding-right: 0.25rem;
+		white-space: normal;
+		overflow-wrap: anywhere;
 	}
 
 	.nav>li.open>.dropdown-menu {
